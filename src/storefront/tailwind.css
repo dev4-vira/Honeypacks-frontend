@@ -1,0 +1,3 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme) prefix(hp);
+@import 'tailwindcss/utilities.css' layer(utilities) prefix(hp) source('./');
