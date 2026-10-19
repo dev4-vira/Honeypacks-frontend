@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/App.tsx src/index.tsx src/storefront --ext .ts,.tsx",
-    "test": "node --experimental-strip-types --test src/storefront/logic/commerce.test.ts",
+    "test": "node --experimental-strip-types --test src/storefront/logic/commerce.test.ts src/storefront/logic/accounts.test.ts",
     "preview": "vite preview"
   },
   "engines": {

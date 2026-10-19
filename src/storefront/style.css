@@ -4966,6 +4966,16 @@
     font-size: 12px;
   }
 }
+.p1 .p1-mock-card {
+  padding: 24px;
+  margin-block: 24px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.p1 .p1-mock-card h2 { margin-top: 0; }
+.p1 .p1-mock-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 20px; }
+.p1 .p1-mock-card .p1-btn { margin-block: 8px; max-width: 100%; white-space: normal; }
 @media (prefers-reduced-motion: reduce) {
   .p1 *,
   .p1 *::before,

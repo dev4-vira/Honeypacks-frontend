@@ -1,14 +1,21 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAccount } from '../state/AccountProvider';
+import { mockAccounts, mockPassword } from '../logic/accounts';
 import { assets } from '../data/catalog';
-import { StoreLink } from '../components/navigation';
+import { StoreLink, useStorePath } from '../components/navigation';
 import { DemoForm, DemoNotice } from '../components/UI';
 
 export function Login() {
+  const auth = useAccount();
+  const navigate = useNavigate();
+  const path = useStorePath();
+  const [params] = useSearchParams();
+  const destination = params.get('next') === 'checkout' ? '/checkout' : params.get('next') === 'subscriptions' ? '/manage-subscription' : '/account';
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -19,9 +26,13 @@ export function Login() {
         ? 'password'
         : '';
     setError(missing);
-    setDone(!missing);
     if (missing) (form.elements.namedItem(missing) as HTMLElement)?.focus();
+    if (!missing) {
+      if (auth.login(String(data.get('username')), String(data.get('password')))) navigate(path(destination), { replace: true });
+      else setError('credentials');
+    }
   }
+  if (auth.account) return <Navigate to={path(destination)} replace />;
   return (
     <section className="p1-account p1-text-container">
       <h1>My account</h1>
@@ -29,7 +40,7 @@ export function Login() {
       <form
         className="p1-login-form"
         onSubmit={submit}
-        onChange={() => setDone(false)}
+        onChange={() => setError('')}
         noValidate
       >
         <label>
@@ -68,28 +79,26 @@ export function Login() {
         </label>
         {error && (
           <p className="p1-form-error" id="p1-login-error" role="alert">
-            Enter your{' '}
-            {error === 'username'
-              ? 'username or email address'
-              : 'demo password'}
-            .
+            {error === 'credentials' ? 'Invalid demo credentials. Use one of the accounts below.' : error === 'username' ? 'Enter your username or email address.' : 'Enter your demo password.'}
           </p>
         )}
         <div className="p1-login-actions">
           <button type="submit">Log in</button>
-          <label>
-            <input type="checkbox" /> Remember me
-          </label>
         </div>
         <StoreLink to="/account/lost-password">Lost your password?</StoreLink>
-        {done && (
-          <DemoNotice message="Demo login checked. No authentication was performed; no username or password was saved." />
-        )}
-        <p className="p1-note">
-          Use sample details only. “Remember me” is a visual demo and does not
-          store credentials.
-        </p>
+        <p className="p1-note">Temporary demo session for this tab. No real account or email is used. Signing out clears the session.</p>
       </form>
+      <aside className="p1-mock-card" aria-label="Demo accounts">
+        <h2>Try a demo account</h2>
+        <p>Password for both accounts: <code>{mockPassword}</code></p>
+        {mockAccounts.map(account => <div key={account.id}>
+          <p><strong>{account.subscription ? 'Subscriber' : 'Customer'}</strong><br />{account.email}</p>
+          <button className="p1-btn" type="button" onClick={() => {
+            auth.login(account.email, mockPassword);
+            navigate(path(destination), { replace: true });
+          }}>Explore as {account.subscription ? 'subscriber' : 'customer'}</button>
+        </div>)}
+      </aside>
     </section>
   );
 }
@@ -112,6 +121,28 @@ export function LostPassword() {
   );
 }
 export function ManageSubscription() {
+  const auth = useAccount();
+  const [message, setMessage] = useState('');
+  if (auth.account) return <section className="p1-account p1-text-container">
+    <h1>Manage Subscription</h1>
+    <DemoNotice message={`Demo account: ${auth.account.email}. Changes affect this temporary session only.`} />
+    {auth.account.subscription && auth.session ? <div className="p1-mock-card">
+      <h2>Black Thai Honey 10 pack</h2>
+      <p>$50 every 4 weeks · shipping calculated separately.</p>
+      <p role="status">Status: <strong>{auth.session.status}</strong>{auth.session.skipped ? ' · Next delivery skipped' : ''}</p>
+      <div className="p1-mock-actions">
+        {auth.session.status === 'active' && <>
+          <button className="p1-btn" onClick={() => { auth.setStatus('paused'); setMessage('Demo subscription paused.'); }}>Pause subscription</button>
+          <button className="p1-btn" disabled={auth.session.skipped} onClick={() => { auth.skip(); setMessage('Demo next delivery skipped. The following delivery is in 8 weeks instead of 4.'); }}>Skip next delivery</button>
+        </>}
+        {auth.session.status === 'paused' && <button className="p1-btn" onClick={() => { auth.setStatus('active'); setMessage('Demo subscription resumed.'); }}>Resume subscription</button>}
+        {auth.session.status !== 'cancelled' && <button className="p1-btn" onClick={() => { auth.setStatus('cancelled'); setMessage('Demo subscription cancelled.'); }}>Cancel subscription</button>}
+        <button className="p1-btn" onClick={() => { auth.reset(); setMessage('Demo subscription restored to its initial state.'); }}>Reset simulation</button>
+      </div>
+      {message && <DemoNotice message={message} />}
+    </div> : <div className="p1-mock-card"><h2>No subscriptions yet</h2><p>This customer profile has a one-time purchase only. Sign out and choose the subscriber account to test subscription management.</p><StoreLink to="/products">Browse products</StoreLink></div>}
+    <StoreLink to="/account">Back to my account</StoreLink>
+  </section>;
   return (
     <section className="p1-portal">
       <div>
@@ -129,6 +160,7 @@ export function ManageSubscription() {
         </StoreLink>
         <h1>Welcome!</h1>
         <p>Sign in below to view your subscriptions.</p>
+        <StoreLink to="/account/login?next=subscriptions" className="p1-btn">Sign in with a demo account</StoreLink>
         <DemoForm
           fields={[
             {
@@ -150,4 +182,30 @@ export function ManageSubscription() {
       </div>
     </section>
   );
+}
+
+export function Account() {
+  const auth = useAccount();
+  const path = useStorePath();
+  if (!auth.account) return <Navigate to={path('/account/login')} replace />;
+  const account = auth.account;
+  return <section className="p1-account p1-text-container">
+    <h1>My account</h1>
+    <DemoNotice message="Demo account · sample orders and profile. No purchases or payments are made." />
+    <h2>Welcome, {account.name}</h2>
+    <p>{account.email}</p>
+    <div className="p1-mock-actions">
+      <StoreLink to="/products" className="p1-btn">Continue shopping</StoreLink>
+      <StoreLink to="/manage-subscription" className="p1-btn">Manage Subscription</StoreLink>
+      <StoreLink to="/checkout" className="p1-btn">Go to checkout</StoreLink>
+      <button className="p1-btn" onClick={auth.logout}>Sign out</button>
+    </div>
+    <div className="p1-mock-card"><h2>Sample order</h2>
+      <p><strong>{account.order}</strong> · Delivered (sample)</p>
+      <p>{account.product} · Quantity: 1</p>
+      <p>{account.subscription ? 'Subscription every 4 weeks' : 'One-time purchase'} · Total: ${account.total.toFixed(2)}</p>
+      <p className="p1-note">Fixture order, including $5 demo shipping. Checkout simulations do not create new orders.</p>
+    </div>
+    <div className="p1-mock-card"><h2>Sample shipping address</h2><p>{account.name}<br />123 Demo Street<br />Austin, TX 78701<br />United States</p></div>
+  </section>;
 }

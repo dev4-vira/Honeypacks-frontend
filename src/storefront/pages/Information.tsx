@@ -197,7 +197,9 @@ export function Policy({ type }: { type: 'returns' | 'privacy' | 'terms' }) {
           <p>
             This demo stores cart contents, shipping preferences and offer
             dismissal locally in your browser. Contact, login and checkout
-            fields remain in memory and are not transmitted. Card numbers cannot
+            fields remain in memory and are not transmitted. Demo account identifiers
+            and simulated subscription preferences are kept in session storage
+            until sign-out or the end of the tab session. Passwords are never saved. Card numbers cannot
             be entered.
           </p>
         </section>

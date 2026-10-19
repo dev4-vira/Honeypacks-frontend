@@ -6,7 +6,7 @@ export function useStorePath() {
   const embedded = new URLSearchParams(search).get('embed') === '1';
   return (path: string) => {
     const [pathname, hash] = path.split('#');
-    return `${storefrontBase}${pathname === '/' ? '/' : pathname}${embedded ? '?embed=1' : ''}${hash ? `#${hash}` : ''}`;
+    return `${storefrontBase}${pathname === '/' ? '/' : pathname}${embedded ? `${pathname.includes('?') ? '&' : '?'}embed=1` : ''}${hash ? `#${hash}` : ''}`;
   };
 }
 export function StoreLink({

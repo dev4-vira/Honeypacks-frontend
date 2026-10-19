@@ -9,7 +9,8 @@ import Catalog from './pages/Catalog';
 import Product from './pages/Product';
 import Checkout from './pages/Checkout';
 import { About, Contact, NotFound, Policy } from './pages/Information';
-import { Login, LostPassword, ManageSubscription } from './pages/Account';
+import { Account, Login, LostPassword, ManageSubscription } from './pages/Account';
+import { AccountProvider } from './state/AccountProvider';
 import { Affiliate, AffiliateApply, Wholesale } from './pages/Programs';
 import '@fontsource/nunito-sans/latin-400.css';
 import '@fontsource/nunito-sans/latin-600.css';
@@ -89,6 +90,7 @@ function Storefront() {
             element={<Checkout key={store.resetVersion} />}
           />
           <Route path={route('/account/login')} element={<Login />} />
+          <Route path={route('/account')} element={<Account />} />
           <Route
             path={route('/account/lost-password')}
             element={<LostPassword />}
@@ -128,8 +130,8 @@ function Storefront() {
 
 export default function StorefrontApp() {
   return (
-    <StorefrontProvider>
+    <AccountProvider><StorefrontProvider>
       <Storefront />
-    </StorefrontProvider>
+    </StorefrontProvider></AccountProvider>
   );
 }

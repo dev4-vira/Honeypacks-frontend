@@ -15,6 +15,8 @@ import { useCheckout } from '../state/useCheckout';
 import { states } from '../logic/checkout';
 import type { CheckoutDraft as Draft } from '../logic/checkout';
 import { useStorefront } from '../state/StorefrontProvider';
+import { useAccount } from '../state/AccountProvider';
+import { mockCheckoutDetails } from '../logic/accounts';
 import { StoreLink } from '../components/navigation';
 import { ArchivedNote } from '../components/UI';
 import { Reviews } from '../components/CommerceBlocks';
@@ -126,6 +128,7 @@ function Address({
 }
 
 export default function Checkout() {
+  const auth = useAccount();
   const store = useStorefront();
   const {
     draft,
@@ -230,7 +233,12 @@ export default function Checkout() {
             <section>
               <div className="p1-checkout-contact-title">
                 <h2>Contact</h2>
-                <StoreLink to="/account/login">Log in</StoreLink>
+                {auth.account ? <div>
+                  <StoreLink to="/account">{auth.account.name} · Demo account</StoreLink>
+                  <button type="button" className="p1-btn" onClick={() => {
+                    if (auth.account) Object.entries(mockCheckoutDetails(auth.account)).forEach(([name, value]) => setValue(name, value));
+                  }}>Use demo account details</button>
+                </div> : <StoreLink to="/account/login?next=checkout">Log in</StoreLink>}
               </div>
               <Field
                 name="email"

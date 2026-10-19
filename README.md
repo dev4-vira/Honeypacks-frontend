@@ -1,8 +1,8 @@
-# HoneyPacks — propuesta 1 independiente
+# HoneyPacks — Plantilla frontend v1
 
-Este frontend ejecuta la **propuesta 1 reconstruida** del laboratorio HoneyPacks: la tienda pública basada en la auditoría del 15 de octubre de 2026 y las capturas C01–C39. Rutas desde `/`, sin comparador ni propuestas 2–5. El laboratorio original permanece sin cambios.
+Plantilla de tienda online basada en [honeypacks.com](https://honeypacks.com/), desarrollada con React y TypeScript. Incluye catálogo, carrito, checkout de demostración y cuentas mock para explorar el recorrido del cliente.
 
-Es una reconstrucción de referencia con datos locales, no una integración con la tienda original ni una copia pixel-perfect certificada. Se conservan el diseño, recursos, catálogo y reglas de la propuesta 1, incluidas las suscripciones **cada cuatro semanas**, no por mes calendario.
+Esta primera versión funciona con datos locales y está preparada para una futura integración con un backend. Las suscripciones de demostración tienen una frecuencia de **cuatro semanas**.
 
 ## Alcance
 
@@ -16,22 +16,35 @@ Es una reconstrucción de referencia con datos locales, no una integración con 
 
 Los pagos, pedidos, suscripciones, autenticación y envíos de formularios no están conectados a servicios reales. Los claims, precios, reseñas y promociones archivados se identifican como referencia, no como información comercial verificada. El texto legal incompleto y los vídeos ausentes siguen siendo pendientes explícitos.
 
+## Cuentas temporales de demostración
+
+En `/account/login` puedes introducir las credenciales o elegir un perfil con los botones de acceso rápido:
+
+| Perfil | Correo | Contraseña |
+| --- | --- | --- |
+| Cliente con compra única | `customer@example.com` | `HoneyDemo123!` |
+| Cliente con suscripción | `subscriber@example.com` | `HoneyDemo123!` |
+
+También se aceptan los usuarios `customer` y `subscriber`. Unas credenciales distintas muestran un error. El panel `/account` requiere una sesión mock y muestra un pedido y una dirección ficticios. Desde el checkout, iniciar sesión devuelve al checkout; «Use demo account details» rellena los datos ficticios sin saltarse las validaciones ni el consentimiento de suscripción.
+
+En `/manage-subscription`, el suscriptor puede pausar, reanudar, omitir la siguiente entrega, cancelar y restablecer la simulación. El perfil cliente muestra el estado sin suscripciones. Los pedidos son ejemplos fijos: completar el checkout no crea pedidos ni nuevas suscripciones.
+
+La sesión y los cambios de suscripción se conservan al recargar mediante `sessionStorage`, en `honeypacks-mock-session-v1`. Solo se guarda el identificador del perfil y el estado simulado; nunca la contraseña ni los campos del checkout. Cerrar sesión elimina ese estado; volver a entrar restablece el escenario inicial. Si el almacenamiento no está disponible, la sesión funciona en memoria. Los perfiles y la contraseña son públicos y solo sirven para navegación: no son un sistema de autenticación real.
+
 ## Tecnologías
 
-Se mantienen React 18, React Router DOM 6 y Vite 5 del destino. TypeScript, Lucide y Nunito Sans local. Tailwind CSS 4 mediante `@tailwindcss/vite`, sin Preflight y con prefijo `hp:` para conservar los estilos importados.
-
-La propuesta original utiliza React 19/Router 8: aquí se adaptaron los imports de navegación y `Context.Provider`, sin cambiar el flujo comercial. Se extrajo el diálogo común necesario, sin arrastrar el carrito ni los datos de las otras propuestas.
+React 18, TypeScript, React Router DOM 6, Vite 5, Lucide y Nunito Sans local. Tailwind CSS 4 mediante `@tailwindcss/vite`, sin Preflight y con prefijo `hp:`.
 
 ## Ejecutar el proyecto
 
-Requisitos: Node.js 22.18 o superior y npm. Verificado localmente con Node.js 26.12.0. Desde este directorio:
+Requisitos: Node.js 22.18 o superior y npm. Desde la raíz del repositorio:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abre la dirección que indique Vite. Puerto utilizado para la revisión de esta transferencia: `npm run dev -- --host 127.0.0.1 --port 5175 --strictPort`, en `http://localhost:5175/`.
+Abre la dirección que indique Vite. Para usar el puerto de los scripts de navegador: `npm run dev -- --host 127.0.0.1 --port 5175 --strictPort`.
 
 | Comando | Uso |
 | --- | --- |
@@ -40,15 +53,15 @@ Abre la dirección que indique Vite. Puerto utilizado para la revisión de esta 
 | `npm run preview` | Revisar localmente la compilación de producción. |
 | `npm run lint` | Revisar el código con ESLint. |
 | `npm run typecheck` | Revisar tipos de la aplicación activa. |
-| `npm test` | Cinco pruebas de comercio y checkout, sin servicios externos. |
+| `npm test` | Ocho pruebas de comercio, checkout y cuentas mock, sin servicios externos. |
 
 ## Organización
 
 ```text
-public/assets/   Recursos originales de la propuesta 1 y procedencia
+public/assets/   Imágenes y recursos de la tienda
 public/licenses/ Licencia de Nunito Sans
 src/
-  App.tsx        BrowserRouter y entrada a la propuesta 1
+  App.tsx        BrowserRouter y entrada a la tienda
   index.tsx      Montaje React y estilos base
   storefront/
     Storefront.tsx  Layout y rutas
@@ -58,16 +71,16 @@ src/
     logic/         Comercio, validación y pruebas
     state/         Carrito persistente y checkout en memoria
     services/      Repositorio local de productos
-    style.css      Diseño de la propuesta 1
+    style.css      Estilos de la tienda
     tailwind.css   Utilidades hp: sin Preflight
-tests/browser/   Recorridos Playwright reutilizados y adaptados
+tests/browser/   Recorridos de prueba con Playwright
 ```
 
 ## Código anterior conservado
 
 Las carpetas originales `src/components`, `contexts`, `data`, `hooks`, `pages`, `types`, `utils`, `src/index.css` y sus cuatro imágenes no se eliminaron. **No se usan ni se compilan como parte de la aplicación activa.** `typecheck` y `lint` verifican las entradas y `src/storefront/`, no ese código anterior.
 
-`tailwind.config.js` y `postcss.config.js` de la plantilla anterior también se conservan como referencia; Vite usa el plugin Tailwind 4 y una configuración PostCSS vacía, no esos plugins antiguos. No se borraron dependencias del código anterior en esta transferencia.
+`tailwind.config.js` y `postcss.config.js` de la plantilla anterior también se conservan como referencia; Vite usa el plugin Tailwind 4 y una configuración PostCSS vacía.
 
 ## Reglas e integración
 
@@ -87,18 +100,10 @@ mkdir -p evidence/storefront
 playwright-cli -s=hp-frontend-transfer open http://localhost:5175/
 playwright-cli --raw -s=hp-frontend-transfer run-code --filename=tests/browser/interaction-check.js
 playwright-cli --raw -s=hp-frontend-transfer run-code --filename=tests/browser/forms-check.js
+playwright-cli --raw -s=hp-frontend-transfer run-code --filename=tests/browser/accounts-check.js
 playwright-cli --raw -s=hp-frontend-transfer run-code --filename=tests/browser/accessibility-check.js
 playwright-cli --raw -s=hp-frontend-transfer run-code --filename=tests/browser/visual-check.js
 playwright-cli -s=hp-frontend-transfer close
 ```
 
 Para comprobar producción: `npm run build` y `npm run preview -- --host 127.0.0.1 --port 4175 --strictPort`; ejecutar `tests/browser/standalone-check.js` en una sesión de prueba. Los scripts usan un perfil de demo, restablecen sus propias claves locales y guardan capturas bajo `evidence/` (ignorado por Git); no usarlos con un perfil personal. La revisión de teclado no equivale a una auditoría WCAG completa.
-
-### Resultado de la transferencia — 19/10/2026
-
-- Build con TypeScript y cinco pruebas de comercio/checkout aprobados.
-- ESLint: cero errores y dos advertencias de Fast Refresh por los módulos que exportan componentes y hooks; no se desactivaron las reglas.
-- 76 vistas (19 rutas × 1920/768/390/360): sin desbordamiento horizontal, imágenes rotas detectadas ni errores JavaScript; un h1 por página.
-- Compra, carrito, filtros, formulario de checkout, formularios públicos, teclado y movimiento reducido verificados en escritorio/móvil.
-- Producción comprobada en 4175: rutas profundas, recarga, persistencia, 404 y recursos locales, sin comparador ni peticiones a servicios externos.
-- Se completaron las tres imágenes de About Us referenciadas por nombres dinámicos. El laboratorio de origen permanece sin cambios; no se hizo commit ni push.

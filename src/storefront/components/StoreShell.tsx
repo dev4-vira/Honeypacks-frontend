@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { assets, disclaimer } from '../data/catalog';
 import { useStorefront } from '../state/StorefrontProvider';
+import { useAccount } from '../state/AccountProvider';
 import { StoreLink } from './navigation';
 import { DemoForm, Modal } from './UI';
 
@@ -42,6 +43,7 @@ const Facebook = ({ size = 24 }: { size?: number }) => (
 );
 
 export function Header() {
+  const { account } = useAccount();
   const store = useStorefront();
   const [menu, setMenu] = useState(false);
   return (
@@ -83,7 +85,7 @@ export function Header() {
               <StoreLink to="/products">All Products</StoreLink>
             </nav>
             <div className="p1-nav-icons">
-              <StoreLink to="/account/login" aria-label="My account">
+              <StoreLink to={account ? '/account' : '/account/login'} aria-label={account ? `My account, ${account.name}` : 'My account'}>
                 <UserRound size={26} strokeWidth={1} />
               </StoreLink>
               <button
@@ -113,7 +115,7 @@ export function Header() {
             ['/wholesale', 'Wholesale'],
             ['/affiliate', 'Become an Affiliate'],
             ['/contact-us', 'Contact Us'],
-            ['/account/login', 'Login'],
+            [account ? '/account' : '/account/login', account ? 'My account' : 'Login'],
             ['/manage-subscription', 'Manage Subscription'],
           ].map(([to, label]) => (
             <StoreLink key={to} to={to} onClick={() => setMenu(false)}>

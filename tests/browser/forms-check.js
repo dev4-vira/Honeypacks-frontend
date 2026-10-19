@@ -49,9 +49,8 @@ async page => {
     await page.getByRole('button',{name:'Show password',exact:true}).click();
     assert(await page.locator('[name="password"]').getAttribute('type')==='text','Show password');
     await page.getByRole('button',{name:'Hide password',exact:true}).click();
-    await page.getByRole('checkbox',{name:'Remember me',exact:true}).check();
     await page.getByRole('button',{name:'Log in',exact:true}).click();
-    assert((await page.locator('.p1-login-form [role="status"]').innerText()).includes('No authentication'),'No real authentication');
+    assert((await page.locator('.p1-login-form [role="alert"]').innerText()).includes('Invalid demo credentials'),'Unknown accounts are rejected');
     await page.getByRole('link',{name:'Lost your password?',exact:true}).click();
     await page.getByRole('heading',{name:'Lost password',exact:true}).waitFor();
     await page.getByRole('link',{name:'Back to login',exact:true}).click();
